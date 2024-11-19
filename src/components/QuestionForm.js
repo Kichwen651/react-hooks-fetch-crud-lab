@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-function QuestionForm(props) {
+function QuestionForm({ addQuestion }) {  
   const [formData, setFormData] = useState({
     prompt: "",
     answer1: "",
@@ -10,8 +10,7 @@ function QuestionForm(props) {
     correctIndex: 0,
   });
 
-  const [questions, setQuestions] = useState([]);
-
+  
   function handleChange(event) {
     setFormData({
       ...formData,
@@ -19,22 +18,33 @@ function QuestionForm(props) {
     });
   }
 
+  
   function handleSubmit(event) {
     event.preventDefault();
+
     const newQuestion = {
       prompt: formData.prompt,
-      answers: [formData.answer1, formData.answer2, formData.answer3, formData.answer4],
+      answers: [
+        formData.answer1,
+        formData.answer2,
+        formData.answer3,
+        formData.answer4,
+      ],
       correctIndex: formData.correctIndex,
     };
-    setQuestions([...questions, newQuestion]);
-    setFormData({
-      prompt: "",
-      answer1: "",
-      answer2: "",
-      answer3: "",
-      answer4: "",
-      correctIndex: 0,
-    });
+
+    
+    fetch("http://localhost:4000/questions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(newQuestion),
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        addQuestion(data);  
+      });
   }
 
   return (
@@ -101,26 +111,6 @@ function QuestionForm(props) {
         </label>
         <button type="submit">Add Question</button>
       </form>
-
-      <ul>
-        {questions.map((question, index) => (
-          <li key={index}>
-            <h4>Question {index + 1}</h4>
-            <h5>Prompt: {question.prompt}</h5>
-            <label>
-              Correct Answer:
-              <select value={question.correctIndex}>
-                {question.answers.map((answer, i) => (
-                  <option key={i} value={i}>
-                    {answer}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <button onClick={() => handleDelete(index)}>Delete Question</button>
-          </li>
-        ))}
-      </ul>
     </section>
   );
 }
